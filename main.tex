@@ -1,0 +1,905 @@
+\documentclass[pdf,serif]{beamer}
+\usepackage[T1]{fontenc}
+% \usepackage{lmodern}
+\usepackage{anyfontsize}
+\usepackage{concmath} 
+\usefonttheme{professionalfonts}
+
+% A great summary of beamer fonts: https://www.logicmatters.net/resources/pdfs/MathFonts.pdf
+
+\usepackage{amssymb,amsmath,amsthm,enumerate,mathtools}
+\usepackage[utf8]{inputenc}
+\usepackage{array}
+\usepackage[parfill]{parskip}
+\usepackage{graphicx}
+\usepackage{caption}
+\captionsetup[figure]{labelformat=empty}
+\usepackage{subcaption}
+\usepackage{amsmath}
+\usepackage{bm}
+\usepackage{amsfonts,amscd}
+%\usepackage{gensymb}
+\usepackage[]{units}
+\usepackage{listings}
+\usepackage{multicol}
+\usepackage{booktabs}
+\usepackage{tcolorbox}
+\usepackage{physics}
+\usepackage[nodisplayskipstretch]{setspace}
+\AtBeginDocument{%
+  \addtolength\abovedisplayskip{-0.5\baselineskip}%
+  \addtolength\belowdisplayskip{-0.5\baselineskip}%
+%  \addtolength\abovedisplayshortskip{-0.5\baselineskip}%
+%  \addtolength\belowdisplayshortskip{-0.5\baselineskip}%
+}
+
+\usepackage{minted}
+\usemintedstyle{borland}
+\setminted[python]{autogobble,fontsize=\tiny,baselinestretch=1.1,linenos,breaklines}
+\usepackage{mdframed}
+\surroundwithmdframed{minted}
+
+% \usepackage{fontspec}
+% \setromanfont{Georgia}
+% \setmainfont{Helvetica Neue}
+%\setsansfont[Scale=MatchLowercase]{Open Sans}
+
+\usepackage{natbib}
+
+%new commands
+\newcommand{\empy}[1]{{\color{BerkeleyGold}\emph{#1}}} 
+\newcommand{\empr}[1]{{\color{BerkeleyBlue}\emph{#1}}}
+
+
+% \theoremstyle{remark}
+% \newtheorem*{remark}{Remark}
+% \theoremstyle{definition}
+
+\newcommand{\examplebox}[2]{
+\begin{tcolorbox}[colframe=CaliforniaGold,colback=boxgray,title=#1]
+#2
+\end{tcolorbox}}
+
+% \newcommand{\eld}[1]{\frac{d}{dt}(\frac{\partial L}{\partial \dot #1}) - \frac{\partial L}{\partial #1}=0}
+% \newcommand{\euler}[1]{\frac{\partial L}{\partial #1}-\frac{d}{dt}(\frac{\partial L}{\partial \dot #1})}
+% \newcommand{\eulerg}[1]{\frac{\partial g}{\partial #1}-\frac{d}{dt}(\frac{\partial g}{\partial \dot #1})}
+% \newcommand{\divg}[1]{\nabla\cdot #1}
+% \newcommand{\prob}[1]{P(#1\vert I)}
+
+% MATH
+
+\renewenvironment{proof}{{\large {\color{BerkeleyBlue}\textit{Proof.}}}}{\hfill$\square$}
+\tcbuselibrary{theorems}
+% The numbering is consistent. Remove `use counder from=defi' to disabled
+% If you want numbering with sections, add `number within=section' option
+\newtcbtheorem{defi}{Definition}%
+{colframe=BerkeleyBlue, colback=boxgray, fonttitle=\bfseries}{df}
+\newtcbtheorem[use counter from=defi]{lem}{Lemma}%
+{colframe=CaliforniaGold, colback=boxgray, fonttitle=\bfseries}{le}
+\newtcbtheorem[use counter from=defi]{thm}{Theorem}%
+{colframe=BerkeleyBlue, colback=boxgray, fonttitle=\bfseries}{th}
+\newtcbtheorem[use counter from=defi]{rem}{Remark}%
+{colframe=CaliforniaGold, colback=boxgray, fonttitle=\bfseries}{re}
+
+
+\usetheme{Berkeley} 
+\input{./style_files_Berkeley/my_beamer_defs.sty}
+\logo{\includegraphics[height=0.4in]{./style_files_Berkeley/Berkeley-wordmark-white-blue-UC}}
+
+
+
+\title[Tensor Product of Representations]{Tensor Product of Group Representations}
+\subtitle{and Its Applications in Equivariant Neural Networkss}
+
+
+\beamertemplatenavigationsymbolsempty
+
+\begin{document}
+
+
+
+\author[Eric Qu, UC Berkeley]{
+    \begin{tabular}{c} 
+    \Large
+    Eric Qu\\
+    \footnotesize \href{mailto:ericqu@berkeley.edu}{ericqu@berkeley.edu}
+\end{tabular}
+\vspace{-3ex}}
+
+\institute{
+    \includegraphics[height=0.6in]{./style_files_Berkeley/berkeley_seal}\\
+    % Department of Electrical Engineering and Computer Sciences\\
+    % Berkeley Artificial Intelligence Research Lab\\
+    % University of California, Berkeley
+    ASK Group Meeting\\
+    UC Berkeley
+}
+\date{\today}
+
+\begin{noheadline}
+\begin{frame}\maketitle\end{frame}
+\end{noheadline}
+
+\begin{frame}{Outline}
+    \begin{itemize}
+        \item Why Equivariance?
+        \item Group Representations and Equivariance
+        \item Spherical Harmonics
+        \item Tensor Product of Representations
+        \item Equivariant Neural Networks
+        \item Future Directions
+    \end{itemize}
+\end{frame}
+
+% \section{Group Representations}
+
+\begin{frame}{Why Equivariance?}
+    \begin{itemize}
+        \item \empr{Symmetry!}
+        \item There are multiple ways to represent a same object (with different coordinate systems)
+        \item We want the model to predict the same output for different representations
+        \item In particular, we want rotational equivariance for GNNs
+    \end{itemize}
+    \begin{figure}
+        \includegraphics[width=0.8\linewidth]{images/equatom}\footnote[frame]{Image Credit: \url{https://e3nn.org}}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{Why Equivariance?}
+    Essentially, we want this:\footnote[frame]{Image Credit: \url{https://e3nn.org}}
+    \begin{figure}
+        \includegraphics[width=\linewidth]{images/equnn}
+    \end{figure}
+    % Since function composition respects equivariance, we only need to ensure the equivariance of each layer.
+    To define this formally, we need some math!
+\end{frame}
+
+\begin{frame}{Group Representations}
+    \begin{defi}{Group}{gp}
+        A set $G$ and an operation $G \times G \to G$ form a group if:
+        \begin{enumerate}
+            \item Identity: $\exists e \in G$ such that $eg = ge = g$ for all $g \in G$.
+            \item Associativity: $(gh)k = g(hk)$ for all $g, h, k \in G$.
+            \item Inverse: $\forall g \in G$, $\exists g^{-1} \in G$, $gg^{-1} = g^{-1}g = e$.
+        \end{enumerate}
+    \end{defi}
+
+    \begin{defi}{Group Representations}{gpr}
+        For a group $G$, a function $F:G\to \mathbb R^{d\times d}$ is a representation iff it follows the structure of the group: $D(e) = {1}$, $D(gh)=D(g)D(h)$, $D(g^{-1}) = D(g)^{-1}$.
+        
+        \textbf{Irreducible Representation:} there is no nontrivial projector $P\in \mathbb R^{q\times d}$ s.t. $g\mapsto PD(g)P^\top$ is a representation.
+    \end{defi}
+\end{frame}
+
+\begin{frame}{Group Representations}{SO(3)}
+    \begin{itemize}
+        \item The set of all rotations in $\mathbb R^3$ form a group $\operatorname{SO}(3)$
+        \item The irreps of $\operatorname{SO}(3)$ are indexed by $l$ with dimension $2l+1$
+    \end{itemize}
+    \vspace*{0.75em}
+    \begin{columns}[onlytextwidth]
+        \column{.6\linewidth}
+        \begin{itemize}\itemsep=0.5em
+            \item[]
+            \begin{itemize}\itemsep=0.5em
+                \item Different $l$ corresponds to different order of Tensor
+                \item $l=0$ is \empy{scalar} $\to$ $1 \times 1$ matrix
+                \item $l=1$ is \empy{vector} $\to$ $3 \times 3$ matrix
+                \item $l=2$ is \empy{rank-2 tensor} $\to$ $5 \times 5$ matrix
+            \end{itemize}
+            \item Higher order tensor is not easy to imagine, but it could carry more information
+        \end{itemize}
+        \column{.35\linewidth}
+            \begin{figure}
+                \includegraphics[width=\linewidth]{images/irreps.png}\footnote[frame]{Generated by DALL$\cdot$E 3}
+            \end{figure}
+    \end{columns}
+    
+\end{frame}
+
+\begin{frame}{Equivariance and Invariance}
+    \begin{columns}%[totalwidth=\textwidth]
+        \column{0.39\linewidth}
+        \begin{spacing}{1.5}
+
+            Vector in Vector Space:\\
+            Input: \scalebox{1.5}{$\textcolor{BerkeleyBlue}{x}\in \textcolor{BerkeleyBlue}{X}$}\\
+            Output: \scalebox{1.5}{$\textcolor{BerkeleyGold}{y}\in \textcolor{BerkeleyGold}{Y}$}\\
+            Weight: \scalebox{1.5}{$\textcolor{FoundersRock}{w}\in \textcolor{FoundersRock}{W}$}\\
+
+            Element of Group:\\
+            \scalebox{1.5}{$\textcolor{CaliforniaGold}{g}\in \textcolor{CaliforniaGold}{G}$}\\
+        \end{spacing}
+        \column{.01\textwidth}
+          \rule{.1mm}{.5\textheight}
+        \column{0.59\linewidth}
+        \begin{spacing}{1.5}
+            
+            Function (Neural Network):\\
+            \scalebox{1.25}{$f(\textcolor{BerkeleyBlue}{x}, \textcolor{FoundersRock}{w})=\textcolor{BerkeleyGold}{y}\  \Rightarrow \ f:\textcolor{BerkeleyBlue}{X}, \textcolor{FoundersRock}{W} \to \textcolor{BerkeleyGold}{Y}$}
+
+            Representation of $\textcolor{CaliforniaGold}{g}$ on Vector Space:\\
+            \scalebox{1.25}{$D_{\textcolor{BerkeleyBlue}{x}}(\textcolor{CaliforniaGold}{g}):\textcolor{BerkeleyBlue}{X} \to \textcolor{BerkeleyBlue}{X}$}\\
+            \scalebox{1.25}{$D_{\textcolor{BerkeleyGold}{y}}(\textcolor{CaliforniaGold}{g}):\textcolor{BerkeleyGold}{Y} \to \textcolor{BerkeleyGold}{Y}$}\\
+            \scalebox{1.25}{$D_{\textcolor{FoundersRock}{w}}(\textcolor{CaliforniaGold}{g})=\mathbf{1}$} \scalebox{0.5}{(Equivariance requires weight to be "scalar")}\\
+        \end{spacing}
+    \end{columns}
+    \vspace*{-1em}
+    The function $f$ is \empr{equivariant} to $\textcolor{BerkeleyBlue}{x}$ if:
+    $$\scalebox{1.1}{$f(D_{\textcolor{BerkeleyBlue}{x}}(\textcolor{CaliforniaGold}{g})\textcolor{BerkeleyBlue}{x}, D_{\textcolor{FoundersRock}{w}}(\textcolor{CaliforniaGold}{g})\textcolor{FoundersRock}{w})=f(D_{\textcolor{BerkeleyBlue}{x}}(\textcolor{CaliforniaGold}{g})\textcolor{BerkeleyBlue}{x}, \textcolor{FoundersRock}{w})=D_{\textcolor{BerkeleyGold}{y}}(\textcolor{CaliforniaGold}{g})f(\textcolor{BerkeleyBlue}{x}, \textcolor{FoundersRock}{w})=D_{\textcolor{BerkeleyGold}{y}}(\textcolor{CaliforniaGold}{g})\textcolor{BerkeleyGold}{y}$}$$
+
+    The function $f$ is \empr{invariant} to $\textcolor{BerkeleyBlue}{x}$ if:
+    $$\scalebox{1.1}{$D_{\textcolor{BerkeleyBlue}{x}}(\textcolor{CaliforniaGold}{g}) = D_{\textcolor{BerkeleyGold}{y}}(\textcolor{CaliforniaGold}{g}) = \mathbf{1}$}$$
+\end{frame}
+
+\begin{frame}{Equivariance and Invariance}
+    Essentially, we want this:\footnote[frame]{Image Credit: \url{https://e3nn.org}}
+    \begin{figure}
+        \includegraphics[width=\linewidth]{images/equnn}
+    \end{figure}
+    Since function composition respects equivariance, we only need to ensure the equivariance of each layer.
+\end{frame}
+
+\begin{frame}{Equivariant GNN}
+    \begin{itemize}
+        \item What do we need to build an equivariant GNN?
+        \item Node Features: belongs to the vector space of irreps ($\mathbb R^{2l+1}$)
+        \item Edge Features: the directional vector between two nodes
+        \begin{itemize}
+            \item This is a vector in $\mathbb R^3$
+            \item We need an equivariant mapping from $\mathbb R^3$ to the vector space of irreps
+        \end{itemize}
+        \item Intractions: between node features and edge features
+        \begin{itemize}
+            \item It operates on the vector space of irreps
+            \item We need this interaction to be equivariant
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Spherical Harmonics}
+    More math to come!
+    \begin{defi}{Spherical Harmonics}{sh}
+        The spherical harmonics are a family of functions $Y^l$ from the unit sphere $\mathbb S^2$ to the vector space of irrep $D^l$. For each order $l$, the spherical harmonics could be seen as a vector of
+        $2l+1$ functions, $Y^l(\vec{x})=\{Y^l_m(\vec{x})\}_{m=-l}^l$. \\
+
+        Each $Y^l_m$ is equivariant to $\operatorname{SO}(3)$ with respect to $D^l$, i.e.
+        \[Y^l_m(R\vec{x})=\sum_{n=-l}^l D^l(R)_{mn} Y^l_n(\vec{x})\]
+        where $R$ is a rotation matrix and $D^l(R)$ is the irrep of $R$.
+
+    \end{defi}
+\end{frame}
+
+\begin{frame}{Spherical Harmonics}
+    \begin{itemize}
+        \item Spherical harmonics provides an equivariant mapping from $\mathbb S^2$ to the vector space of irreps
+        \item We could use it to model the edge features
+    \end{itemize}
+    \begin{figure}
+        \includegraphics[width=0.7\linewidth]{images/sh.pdf}\footnote[frame]{Image Credit: \citet{zitnick2022spherical}}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{Tensor Product of Representations}
+    \begin{itemize}
+        \item We want to model the interactions between (and within) node features and edge features
+        \begin{itemize}
+            \item It should act between two vector spaces of irreps
+            \item It should be bilinear and equivariant
+            \item Thus we define the \empr{Tensor Product of Representations}
+        \end{itemize}
+        \item It is not rigorously defined (ref: \citet{geiger2022e3nn})
+        \item For two "tensor" $x, y$ in the vector spaces of irreps, the tensor product of representations is denoted as:
+        $$x\otimes y$$
+        \item It could be generalized to the direct sum of these tensors (because its bilinear)
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Tensor Product of Representations}
+    \begin{itemize}
+        \item We represent the \empr{type} of tensor as $(l, p)$: (order, parity)
+        \item For two tensors $(l_1, p_1)$ and $(l_2, p_2)$, all possible \empr{paths}:
+        \[\begin{cases}
+            |l_1-l_2|\leq l_3 \leq l_1+l_2\\
+            p_3 = p_1p_2
+        \end{cases}\]
+        \item There is a \empr{path} for all possible $(l_3, p_3)$
+        \item Each path is independent, bilinear and equivariant
+        \item Let's look at some examples!
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Tensor Product of Representations}{Full Tensor Product}
+    \begin{itemize}
+        \item Suppose we have two tensors $0e+1o+2e$ and $0e+1o$
+        \begin{itemize}
+            \item Here, $0e$ means $l=0$, even parity
+            \item We have a direct sum of "scalar $\oplus$ vector $\oplus$ rank-2 tensor" and "scalar $\oplus$ vector"
+        \end{itemize}
+        \item The full tensor product is:
+    \end{itemize}
+    \begin{columns}
+        \column{0.5\linewidth}
+        \begin{figure}
+            \includegraphics[width=\linewidth]{images/fulltp1.pdf}
+        \end{figure}
+        \column{0.5\linewidth}
+        \begin{minted}{python}
+            import torch
+            from e3nn import o3
+    
+            irreps_in1 = o3.Irreps('0e + 1o + 2e') 
+            irreps_in2 = o3.Irreps('0e + 1o')
+            tp = o3.FullTensorProduct(irreps_in1, irreps_in2)
+        \end{minted}
+    \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Tensor Product of Representations}{Full Tensor Product}
+    \begin{itemize}
+        \item More generally, we have a channel dimension for each "tensor": $(c, l, p)$
+        \begin{itemize}
+            \item It resembles the "hidden" dimension in MLP
+            \item Different channels also needs to interact between each other
+        \end{itemize}
+        \item The full tensor product with channels is:
+    \end{itemize}
+    \begin{columns}
+        \column{0.5\linewidth}
+        \begin{figure}
+            \includegraphics[width=\linewidth]{images/fulltp2.pdf}
+        \end{figure}
+        \column{0.55\linewidth}
+        \begin{minted}{python}
+            import torch
+            from e3nn import o3
+    
+            irreps_in1 = o3.Irreps('8x0e + 8x1o + 8x2e') 
+            irreps_in2 = o3.Irreps('8x0e + 8x1o')
+            tp = o3.FullTensorProduct(irreps_in1, irreps_in2)
+        \end{minted}
+        \vspace*{1em}
+        \begin{figure}
+            \includegraphics[width=0.7\linewidth]{images/tensor.pdf}
+        \end{figure}
+    \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Tensor Product of Representations}{Fully Connected Tensor Product}
+    \begin{itemize}
+        \item Since each path is independent, we could use take a \empr{subset} / \empr{linear combination} of the paths
+        \item The result is still bilinear and equivariant
+        \item In this way, we could set the \empr{type} of the output irreps and define \empr{learnable weights} for the paths
+    \end{itemize}
+    \begin{columns}
+        \column{0.5\linewidth}
+        \begin{figure}
+            \includegraphics[width=\linewidth]{images/fulltp3.pdf}
+        \end{figure}
+        \column{0.55\linewidth}
+        \begin{minted}{python}
+            import torch
+            from e3nn import o3
+
+            irreps_in1 = o3.Irreps('8x0e + 8x1o + 8x2e') 
+            irreps_in2 = o3.Irreps('8x0e + 8x1o')
+            irreps_out = o3.Irreps('8x0e + 8x1o + 8x2e')
+            tp = o3.FullyConnectedTensorProduct(
+                irreps_in1, irreps_in2, irreps_out)
+            print(tp.weight_numel)
+            # > 3584
+        \end{minted}
+        \vspace*{1em}
+        \scalebox{0.6}{$3584 = \underbrace{(64 + 64) * 8}_\text{0e} + \underbrace{(64 + 64 + 64) * 8}_{1o} + \underbrace{(64 + 64) * 8}_{2e}$}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Tensor Product of Representations}{Clebsch-Gordan Coefficients}
+    \begin{itemize}
+        % \item Let's dive a bit deeper into the implementations
+        \item The {Clebsch-Gordan Coefficients} are the \empr{change of basis} that decompose the tensor product into irreps
+        % $$
+        % C_{l m n}^{l_1, l_2, l_3}=C_{i j k}^{l_1, l_2, l_3} D_{i l}^{l_1}(R) D_{j m}^{l_2}(R) D_{k n}^{l_3}(R) \quad \forall R \in S O(3)
+        % $$
+        \item In each path, we have $C^{l_3}_{l_1, l_2}\in \mathbb{R}^{(2l_1+1)\times (2l_2+1) \times (2l_3+1)}$
+        \item This coefficient is the key behind the equivariance 
+        \item In the following eaxample, $l_1=2, l_2=1, l_3=1$;\\ the coefficient is in $\mathbb R^{5\times 3\times 3}$
+    \end{itemize}
+    \begin{figure}
+        \includegraphics[width=0.4\linewidth]{images/tensor.pdf}
+        \hfill
+        \includegraphics[width=0.4\linewidth]{images/cg.pdf}\footnote[frame]{Image Credit: \citet{Passaro2023ReducingSC}}
+    \end{figure}
+\end{frame}
+
+\begin{frame}[fragile]{Tensor Product of Representations}{Implementations}
+    \begin{itemize}
+        \item The output of Tensor Product is a (weighted) sum of paths
+        $$
+        \text { out}=\sqrt{\frac{1}{\text { number of paths }}} \sum_{i \in \text {paths }} \text {value of path } i
+        $$
+        The constant ensures the output has variance 1
+        \item For Fully Connected TP, in each path
+    \end{itemize}
+    $$
+    (\text {value of path})_{w k}= \frac{1}{\sqrt{c_1 c_2}} \sum_{u=1}^{c_1} \sum_{v=1}^{c_2} \sum_{i=1}^{2 l_1+1} \sum_{j=1}^{2 l_2+1} w_{u v w} C_{i j k}(\mathrm{in} 1)_{u i}(\mathrm{in} 2)_{v j}
+    $$
+    \vspace*{-1em}
+    \begin{itemize}
+        \item In the implementation: let $C\in \mathbb{R}^{(2l_1+1)\times (2l_2+1) \times (2l_3+1)}$, $x_1\in \mathbb R^{b\times c_1\times (2l_1+1)}$, $x_2\in \mathbb R^{b\times c_2\times (2l_2+1)}$, $w\in \mathbb R^{c_1\times c_2\times c_3}$, then
+    \end{itemize}
+    \vspace*{1em}
+    \begin{minted}[fontsize=\scriptsize]{python}
+        xx = torch.einsum('bui,bvj->buvij', x1, x2)
+        result = torch.einsum("uvw,ijk,buvij->bwk", w, C, xx)
+    \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]{Tensor Product of Representations}{Implementations}
+    \begin{itemize}
+        \item We could have a more sparse weight connection
+        \item The Fully Connected TP is called \empr{uvw} connection
+        \item The following is equivalent to Fully Connected TP
+    \end{itemize}
+    \vspace*{1em}
+    \begin{minted}{python}
+        import torch
+        from e3nn import o3
+
+        irreps_in1 = o3.Irreps('8x0e + 8x1o + 8x2e') 
+        irreps_in2 = o3.Irreps('8x0e + 8x1o')
+        irreps_out = o3.Irreps('8x0e + 8x1o + 8x2e')
+        connection = 'uvw'
+        instructions = [
+            (i_1, i_2, i_out, connection, True, 1.0)
+            for i_1, (_, ir_1) in enumerate(irreps_in1)
+            for i_2, (_, ir_2) in enumerate(irreps_in2)
+            for i_out, (_, ir_out) in enumerate(irreps_out)
+            if ir_out in ir_1 * ir_2
+        ]
+        tp = o3.TensorProduct(irreps_in1, irreps_in2, irreps_out, instructions)
+        print(tp.weight_numel)
+        # > 3584
+    \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]{Tensor Product of Representations}{Implementations}
+    \small
+    \empr{uvw} connection: $w\in \mathbb R^{c_1\times c_2\times c_3}$
+    \vspace*{0.5em}
+    \begin{mdframed}
+        \mintinline[fontsize=\scriptsize]{python}{result = torch.einsum("uvw,ijk,buvij->bwk", w, C, xx)}
+    \end{mdframed}
+
+    \empr{uvu} connection: $w\in \mathbb R^{c_1\times c_2}$ (requires $c_1=c_3$)
+    \vspace*{0.5em}
+    \begin{mdframed}
+        \mintinline[fontsize=\scriptsize]{python}{result = torch.einsum("uv,ijk,buvij->buk", w, C, xx)}
+    \end{mdframed}
+
+    \empr{uvu} connection: $w\in \mathbb R^{c_1\times c_2}$ (requires $c_2=c_3$)
+    \vspace*{0.5em}
+    \begin{mdframed}
+        \mintinline[fontsize=\scriptsize]{python}{result = torch.einsum("uv,ijk,buvij->bvk", w, C, xx)}
+    \end{mdframed}
+
+    \empr{uuw} connection: $w\in \mathbb R^{c_1\times c_3}$ (requires $c_1=c_2$)
+    \vspace*{0.5em}
+    \begin{mdframed}
+        \mintinline[fontsize=\scriptsize]{python}{result = torch.einsum("uw,ijk,buij->bwk", w, C, xx)}
+    \end{mdframed}
+
+    \empr{uuu} connection: $w\in \mathbb R^{c_1}$ (requires $c_1=c_2=c_3$)
+    \vspace*{0.5em}
+    \begin{mdframed}
+        \mintinline[fontsize=\scriptsize]{python}{result = torch.einsum("u,ijk,buij->buk", w, C, xx)}
+    \end{mdframed}
+    
+\end{frame}
+
+\begin{frame}{Tensor Product of Representations}{Implementations}
+    \begin{itemize}
+        \item Some details about acceleration in e3nn
+        \item The whole TP is basically lots of einsums
+        \item High-level Steps:
+        \begin{itemize}
+            \item Use Python code generation to generate a computational graph with torch.fx
+            \item Fuse einsums if possible, replace scalar einsums
+            \item Use the opt\_einsum package to optimize the einsums on the computational graph
+        \end{itemize}
+        \item These optimizations improved the speed by 50x when $l=6, c=128, b=16$.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Equivariant Neural Networks}{TFN and NequIP}
+    \small
+    \begin{itemize}
+        \item Putting it all together, we have Tensor Field Networks \citep{thomas2018tensor} and NequIP \citep{batzner20223}
+        \item In the Graph:
+        \begin{itemize}
+            \item Node Features: tensors belongs to the vector space of irreps
+            \item Edge Features: directional vectors between nodes
+            \begin{itemize}
+                \item Decompose into a unit vector on $\mathbb S^2$ and a scalar distance
+            \end{itemize}
+        \end{itemize}
+        \item Steps for Message Passing:
+        \begin{itemize}
+            \item[1.] Use a MLP to predict scalar weight for TP from distance
+            \item[2.] Use Spherical Harmonics to map unit vector to the vector space of irreps
+            \item[3.] Do a Tensor Product for every neighbor. In1: Node Features, In2: Spherical Harmonics, Out: Node Features, Weight: Scalar Weight from Step 1., Connection: \empr{uvu}
+            \item[4.] Aggregate neighbor node features with (normalized) mean
+        \end{itemize} 
+    \end{itemize}
+    $$\scalebox{0.8}{$\displaystyle
+    \mathcal{L}_{a c m_o}^{\left(l_o, p_o, l_f, l_i, p_f, p_i\right)}\left(\vec{r}_a, V_{a c m_i}^{\left(l_i, p_i\right)}\right)=\sum_{m_f, m_i} C_{\left(l_i, m_i\right)\left(l_f, m_f\right)}^{\left(l_o, m_o\right)} \sum_{b \in S}\left(R_c^{\left(l_f, l_i, p_f, p_i\right)}\left(r_{a b}\right)\right) Y_{m_f}^{\left(l_f\right)}\left(\hat{r}_{a b}\right) V_{b c m_i}^{\left(l_i, p_i\right)}
+    $}$$
+\end{frame}
+
+\begin{frame}{Equivariant Neural Networks}{EquiformerV1}
+    \begin{itemize}
+        \item Equivariant Graph Attention \citep{liao2022equiformer}
+    \end{itemize}
+    \begin{figure}
+        \includegraphics[width=0.8\linewidth]{images/equiformer}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{Equivariant Neural Networks}{EquiformerV1}
+    \begin{itemize}
+        \item Depth-wise Tensor Product
+        \begin{itemize}
+            \item A fancy name for TP with \empr{uvu} connection
+        \end{itemize}
+        \item This is very similar to the one in TFN
+    \end{itemize}
+    \vspace*{1em}
+    \begin{figure}
+        \includegraphics[width=\linewidth]{images/DTP}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{Equivariant Neural Networks}{SCN}
+    \begin{itemize}
+        \item Spherical Channel Networks \citep{zitnick2022spherical}
+        \item No Tensor Product framework (not strictly equivariant)
+        \item Node feature interpretation: spherical harmonic coefficients parameterizing a function on $\mathbb S^2$
+        $$
+        F_{\mathbf{x}}(\hat{\mathbf{r}})=\sum_{l, m} \mathbf{x}_m^{(l)} \mathbf{Y}_m^{(l)}(\hat{\mathbf{r}})
+        $$
+        which is equivariant to $\operatorname{SO}(3)$
+        $$
+        \mathbf{x}^{(l)} \cdot \mathbf{Y}^{(l)}(\mathbf{R} \cdot \hat{\mathbf{r}})=\left(\mathbf{D}^{(l)}(\mathbf{R}) \mathbf{x}^{(l)}\right) \cdot \mathbf{Y}^{(l)}(\hat{\mathbf{r}})
+        $$
+    \end{itemize}
+    \begin{figure}
+        \includegraphics[width=.7\linewidth]{images/shc}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{Equivariant Neural Networks}{SCN}
+    \begin{itemize}
+        \item Message Passing
+        \begin{itemize}
+            \item Align the edge direction to the $y$-axis
+            \item This kills all rotational degrees of freedom except for the rotation around $y$-axis
+        \end{itemize}
+    \end{itemize}
+    \vspace*{1em}
+    \begin{figure}
+        \includegraphics[width=.8\linewidth]{images/rot}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{Equivariant Neural Networks}{SCN}
+    \begin{itemize}
+        \item Message Passing
+        \begin{itemize}
+            \item A good property of the spherical harmonics is that it is invariant to rotation around $y$-axis when $m=0$
+        \end{itemize}
+    \end{itemize}
+    \vspace*{1em}
+    \begin{figure}
+        \includegraphics[width=.7\linewidth]{images/rot2}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{Equivariant Neural Networks}{SCN}
+    \begin{itemize}
+        \item Message Passing
+        \begin{itemize}
+            \item They use a sequence of MLPs to predict the node features 
+            \item For $m=0$, it is invariant to rotation
+        \end{itemize}
+    \end{itemize}
+    \vspace*{1em}
+    \begin{figure}
+        \includegraphics[width=.9\linewidth]{images/rot3}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{Equivariant Neural Networks}{SCN}
+    \begin{itemize}
+        \item Message Passing
+        \begin{itemize}
+            \item They use a sequence of MLPs to predict the node features 
+            \item For $m>0$, they use rotation to approximate
+        \end{itemize}
+    \end{itemize}
+    \vspace*{1em}
+    \begin{figure}
+        \includegraphics[width=.9\linewidth]{images/rot4}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{Equivariant Neural Networks}{eSCN}
+    \begin{itemize}
+        \item In eSCN \citep{Passaro2023ReducingSC}, they incorporate Tensor Product framework and accelerate it with the "rotation alignment" trick
+        \item Goal: same Tensor Product
+        $$
+        \mathbf{a}_{s t}^{\left(l_o\right)}=\sum_{l_i, l_f} \mathbf{x}_s^{\left(l_i\right)} \otimes_{l_i, l_f}^{l_o} \mathbf{h}_{l_i, l_f, l_o} \mathbf{Y}^{\left(l_f\right)}\left(\hat{\mathbf{r}}_{s t}\right)
+        $$
+        where $\mathbf{h}_{l_i, l_f, l_o}$ is MLP: distance $\to$ scalar weight
+        \item Apply rotation alignment:
+        $$
+        \mathbf{a}_{s t}^{\left(l_o\right)}=\mathbf{D}^{-1} \cdot \sum_{l_i, l_f} \tilde{\mathbf{x}}_s^{\left(l_i\right)} \otimes_{l_i, l_f}^{l_o} \mathbf{h}_{l_i, l_f, l_o} \mathbf{Y}^{\left(l_f\right)}\left(\mathbf{R} \cdot \hat{\mathbf{r}}_{s t}\right)
+        $$
+        \item Key observation:
+        $$
+        \mathbf{Y}_m^{(l)}\left(\mathbf{R}_{s t} \cdot \hat{\mathbf{r}}_{s t}\right) \propto \delta_m^{(l)}= \begin{cases}1 & \text { if } m=0 \\ 0 & \text { if } m \neq 0\end{cases}
+        $$
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Equivariant Neural Networks}{eSCN}
+    \begin{itemize}
+        \item Therefore
+        $$
+        \mathbf{a}_{s t}^{\left(l_o\right)}=\mathbf{D}_{s t}^{-1} \cdot \sum_{l_i, l_f} \tilde{\mathbf{x}}_s^{\left(l_i\right)} \otimes_{l_i, l_f}^{l_o} \mathbf{h}_{l_i, l_f, l_o} \delta^{\left(l_f\right)}
+        $$
+        \item Another observation is that the Clebsch-Gordan Coefficients are sparse
+        \item However, they did not use this formulation in the implementation
+    \end{itemize}
+    \vspace*{1em}
+    \begin{figure}
+        \includegraphics[width=\linewidth]{images/escn}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{Equivariant Neural Networks}{eSCN}
+    \begin{itemize}
+        \item They defined circular harmonics similarly, which is a mapping from unit circle to the vector space of irreps.
+    \end{itemize}
+    \begin{defi}{Circular Harmonic}
+        A circular harmonic of degree $k$ and order $j$ is $\mathbf{B}_j^{(k)}: \mathbb S \rightarrow \mathbb{R}$ defined as:
+        $$
+        \mathbf{B}_j^{(k)}(\phi)=\left\{\begin{array}{lll}
+        \sin (k \phi) & \text { if } \quad j=1 \\
+        \cos (k \phi) & \text { if } \quad j=-1
+        \end{array}\right.
+        $$
+    \end{defi}
+         
+    \begin{itemize}
+        \item The spherical harmonics basis functions can be written as:
+        $$
+        \mathbf{Y}_m^{(l)}(\theta, \phi)= \begin{cases}P_m^{(l)}(\theta) \sin (m \phi) & \text { if } m>0 \\ P_m^{(l)}(\theta) \cos (m \phi) & \text { if } m \leq 0\end{cases}
+        $$
+        where $P_m^{(l)}(\theta)$ is the Legendre polynomial which depends only
+        on $\theta$ and $\phi$ (contained in $\mathbf{\hat r}$).
+    \end{itemize}
+    % \vspace*{1em}
+
+\end{frame}
+
+\begin{frame}{Equivariant Neural Networks}{eSCN}
+    \begin{itemize}
+        \item Thus, we could substitute the spherical harmonics:
+        $$F_{\mathbf{x}}(\theta, \phi)=\sum_{l, m} \mathbf{x}_m^{(l)} P_m^{(l)}(\theta) \mathbf{B}_{s g n(m)}^{(m)}(\phi)$$
+
+        \item The angle $\theta$ is fixed because of the rotational alignment
+        \item Also, the circular harmonics are Fourier Series; a 1D conv about $\phi$ can be performed in the spectral domain
+    \end{itemize}
+    % \vspace*{1em}
+    \begin{figure}
+        \includegraphics[width=0.5\linewidth]{images/sc}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{Equivariant Neural Networks}{eSCN}
+    \begin{itemize}
+        \item The architecture is similar to SCN
+        \item This is not strictly equivariant because of the Linear layer
+    \end{itemize}
+    \vspace*{1em}
+    \begin{figure}
+        \includegraphics[width=0.19\linewidth]{images/escn1}
+        \hfill
+        \includegraphics[width=0.79\linewidth]{images/escn2}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{Equivariant Neural Networks}{EquiformerV2}
+    \small
+    \begin{itemize}
+        \item EquiformerV2 \citep{liao2023equiformerv2} adopted the eSCN $\operatorname{SO}(2)$ convolution operation
+        \item EquiformerV1 could not go up to higher $l$ because the number of weights is too large. EquiformerV2 could go up to $l=6$
+    \end{itemize}
+    % \vspace*{1em}
+    \begin{figure}
+        \includegraphics[width=\linewidth]{images/eqv2}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{Equivariant Neural Networks}{Results on OC20}
+    \begin{itemize}
+        \item Results on OC20 \citep{ocp_dataset}
+        \begin{itemize}
+            \item S2EF: Structure to Energy and Force
+            \item IS2RS: Initial Structure to Relaxation Structure
+            \item IS2RE: Initial Structure to Relaxation Energy
+        \end{itemize}
+    \end{itemize}
+    \vspace*{1em}
+    \begin{figure}
+        \includegraphics[width=\linewidth]{images/resescn.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{Equivariant Neural Networks}{Results on OC20}
+    \begin{itemize}
+        \item Results on OC20 \citep{ocp_dataset}
+        \begin{itemize}
+            \item S2EF: Structure to Energy and Force
+            \item IS2RS: Initial Structure to Relaxation Structure
+            \item IS2RE: Initial Structure to Relaxation Energy
+        \end{itemize}
+    \end{itemize}
+    \vspace*{1em}
+    \begin{figure}
+        \includegraphics[width=\linewidth]{images/resoc}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{Future Directions}{}
+    \begin{itemize}
+        \item Are they really equivariant?
+        \item OC20 S2EF
+        \begin{itemize}
+            \item Load Pre-trained model and random batch $X$
+            \item Make inital predictions $Y$ with the model
+            \item Rotation the batch $X$ by $R$ and make predictions $Y'$
+            \item Calculate the cosine similarity between $RY$ and $Y'$
+        \end{itemize}
+    \end{itemize}
+    \vspace*{1em}
+    \begin{table}[!ht]
+        \centering\scriptsize 
+        \begin{tabular}{lllll}
+        \toprule
+            Model & x-axis & y-axis & z-axis & random \\ 
+        \midrule
+            EquiformerV2 & 0.3881 & 0.2902 & 0.2331 & 0.1173 \\ 
+            eSCN & 0.3725 & 0.2748 & 0.2488 & 0.1356 \\ 
+            SCN & 0.2924 & 0.2096 & 0.1712 & 0.0729 \\ 
+            Gemnet-OC & 0.3776 & 0.3038 & 0.2688 & 0.1611 \\ 
+            Dimenet++ & 0.5584 & 0.4851 & 0.4503 & 0.4573 \\ 
+            SchNet & 0.1720 & 0.1190 & 0.0845 & -0.030 \\ 
+        \bottomrule
+        \end{tabular}
+    \end{table}
+\end{frame}
+
+\begin{frame}{Future Directions}{}
+    \begin{itemize}
+        \item Adaptive equivariance?
+        \begin{itemize}
+            \item Clebsch-Gordan Coefficients
+        \end{itemize}
+        \item Can we further accelerate the TPs?
+        \begin{itemize}
+            \item Tianlang's work on Fourier basis TP + eSCN rotation alignment
+            \item Adding more approximates into current framework
+            \item Share-Weight TP
+        \end{itemize}
+        \item Model Designs
+        \begin{itemize}
+            \item Now basically everyone is using the edge distance + MLP to predict the scalar weight, it is really expressive enough?
+            \item Equiformer is only using the scalar as "alpha channel". It could be easily generalized to higher $l$.
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \centering
+    \Huge
+    Thank you!
+\end{frame}
+
+% \begin{frame}{Goals}{Subtitle}
+% The main goals for this slide:
+% \begin{itemize}
+%     \item This is just to show you how this \empy{template} works
+%     \item There are two `emphasize' functions used to highlight \& italicize texts
+%     \begin{itemize}
+%         \item `\textbackslash empy' does \empy{this} and `\textbackslash empr' does \empr{this}.
+%     \end{itemize}
+%     \item The colors in this template is taken from the UC Berkeley brand guide: {\url{https://brand.berkeley.edu/colors/}}
+% \end{itemize}
+% \end{frame}
+
+
+
+% \begin{frame}{Example}
+% A (hopefully) useful function in this \LaTeX~template is:
+% \begin{center}
+%     \textbackslash examplebox\{ExampleTitle\}\{ExampleContents\}
+% \end{center}
+% which does this:
+% \examplebox{Example of the Command \textbackslash examplebox}{
+% This is what it does. Pretty self-explanatory, isn't it?
+
+% Given the color them, I \empr{recommend} using \textbackslash empr inside of examplebox. The \textbackslash empy command does not look \empy{that} good.
+% }
+% \end{frame}
+
+% \section{Math}
+% \begin{frame}{Math}
+% There are color boxes for Definition, Theorem, and Lemma:
+% \begin{defi}{Test}{te}
+% \end{defi}
+% \begin{thm}{Test}{te}
+% \end{thm}
+% \begin{lem}{Test}{te}
+% \end{lem}
+% \begin{proof}
+% \end{proof}
+
+% You can refer to them by Def. \ref{df:te}, Thm. \ref{th:te}, Lem. \ref{le:te}. 
+% \end{frame}
+
+% \begin{frame}{Math}
+%     Test some equations:
+%     $$
+%     \begin{aligned}
+%         &\int_{-\infty}^{\infty} \exp \left(a x^4+b x^3+c x^2+d x+f\right) d x\\
+%         =&\ e^f \sum_{n, m, p=0}^{\infty} \frac{b^{4 n}}{(4 n) !} \frac{c^{2 m}}{(2 m) !} \frac{d^{4 p}}{(4 p) !} \frac{\Gamma\left(3 n+m+p+\frac{1}{4}\right)}{a^{3 n+m+p+\frac{1}{4}}}
+%     \end{aligned}
+%     $$
+
+%     $$
+%     p(R, \phi) \sim \int_{-\infty}^{\infty} \frac{\tilde{W}_n(\gamma) \exp \left[\imath R / a\left(\sqrt{k^2 a^2-\gamma^2} \cos \phi\right)\right]}{\left(k^2 a^2-\gamma^2\right)^{3 / 4} H_n^{\prime(1)}\left(\sqrt{k^2 a^2-\gamma^2}\right)} d \gamma
+%     $$
+% \end{frame}
+
+% \section{Code}
+
+% \begin{frame}[fragile]{Code}
+%     %set the langauge in these brackets after {minted}{LANGUAGE SHORTHAND} 
+
+% Test code block:
+
+% \begin{minted}{c}
+% int main() {
+%     printf("hello, world");
+%     return 0;
+% }
+% \end{minted}
+
+% Test inline code: \mintinline{python}{print("hello, world")}
+% \end{frame}
+
+% \section{Citation} 
+
+% \begin{frame}{Citation}
+%     Test Citation: \citep{qu2023data}, \citet{qu2023data}
+% \end{frame}
+
+\begin{frame}[t, allowframebreaks]
+    \frametitle{References}
+    \bibliographystyle{apalike}
+    \scriptsize
+    \bibliography{ref.bib}
+\end{frame}
+
+\end{document}
